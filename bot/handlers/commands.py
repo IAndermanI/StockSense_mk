@@ -36,7 +36,7 @@ class MyCommandsHandler(MessageHandler, MessageHandlerCommandMixin):
         if message.from_user.id in config.admin_ids:
             await message.answer(f'Hi, please /create_lobby')
         else:
-            await message.answer(f'Hi, ask your teacher for lobby ID')
+            await message.answer(f'Здравствуйте, спросите у админа лобби-ID .')
             await state.set_state(JOIN.EnterCode)
 
     async def _handle_create_lobby(self, message):

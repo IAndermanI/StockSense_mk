@@ -13,7 +13,7 @@ class Player:
     def __init__(self, user_id):
         self.user_id = user_id
         self.inventory = defaultdict(int)
-        self.balance = 100
+        self.balance = 100 # начальная сумма
         self.wants_to_buy = None
         self.items_to_buy = []
 

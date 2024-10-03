@@ -38,9 +38,10 @@ class MyCallbackHandler(CallbackQueryHandler):
     async def _send_items_to_buy(self, lobby_code):
         items_to_pick = get_lobby(lobby_code).round.get_items_to_pick()
         for player_id in items_to_pick.keys():
+            info_txt = f'Твой баланс: {get_player(player_id).check_inventory()}'
             await self.bot.send_message(
                 chat_id=player_id,
-                text="Выбери, что будешь покупать",
+                text=info_txt + "Выбери, что будешь покупать",
                 reply_markup=build_inlineKB_from_list(
                     callback="buy",
                     items=[f"{item}: {items.get_price(item)}"

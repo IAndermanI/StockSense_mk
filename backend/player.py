@@ -14,7 +14,7 @@ class Player:
         self.user_id = user_id
         self.username = ""
         self.inventory = defaultdict(int)
-        self.balance = 100 # начальная сумма
+        self.balance = 100
         self.wants_to_buy = None
         self.items_to_buy = []
 

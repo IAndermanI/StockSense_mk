@@ -29,15 +29,12 @@ class MyMessageHandler(MessageHandler):
         if not message.text.isnumeric():
             await message.answer(f'Код - строка из 6 цифр. Попробуй снова!')
         elif int(message.text) in get_lobby.get_all_lobbies():
-            if get_lobby(int(message.text)).is_player_in_lobby(message.from_user.id):
-                await message.answer(f'Ты уже есть в лобби')
-            else:
-                get_player(message.from_user.id)
-                get_player(message.from_user.id).username = message.from_user.username
-                get_lobby(int(message.text)).add_player(message.from_user.id)
-                await message.answer(f'Добавил тебя в лобби. Теперь жди начала игры')
+            get_player(message.from_user.id)
+            get_player(message.from_user.id).username = message.from_user.username
+            get_lobby(int(message.text)).add_player(message.from_user.id)
+            await message.answer(f'Успешно добавили в лобби. Теперь жди начала')
         else:
-            await message.answer(f'Возникла ошибка при добавлении в лобби. Попробуй снова!')
+            await message.answer(f'Mistake in the lobby code. Try again!')
 
     async def _buy_item(self, message):
         if not message.text.isnumeric():

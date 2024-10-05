@@ -30,6 +30,9 @@ class Lobby:
         self.player_ids = []
         self.round = Round()
 
+    def is_player_in_lobby(self, player_id):
+        return player_id in self.player_ids
+
     def add_player(self, player_id):
         self.player_ids.append(player_id)
 

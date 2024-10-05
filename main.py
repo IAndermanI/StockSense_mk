@@ -10,7 +10,6 @@ storage = MemoryStorage()
 bot = Bot(BOT_TOKEN, default=DefaultBotProperties(parse_mode='HTML'))
 dp = Dispatcher(storage=storage)
 
-
 MyCallbackHandler(callback_router, dispatcher=dp, bot=bot)
 MyMessageHandler(messages_router, dispatcher=dp, bot=bot)
 MyCommandsHandler(commands_router, dispatcher=dp, bot=bot)

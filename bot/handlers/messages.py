@@ -1,17 +1,10 @@
-import logging
-from typing import Any
-from aiogram.types import Message
-from aiogram.fsm.state import default_state
 from aiogram.fsm.context import FSMContext
-from aiogram.filters import Command
 from aiogram import Router
-from datetime import datetime, timedelta
-from aiogram.handlers import MessageHandler, MessageHandlerCommandMixin
+from aiogram.handlers import MessageHandler
 from aiogram.fsm.storage.base import StorageKey
 from backend.player import get_player
 from bot.keyboard import build_inlineKB_from_list
 from bot.states import *
-from config import config
 from backend.lobby import *
 
 messages_router = Router()
@@ -34,12 +27,17 @@ class MyMessageHandler(MessageHandler):
 
     async def _enter_code(self, message):
         if not message.text.isnumeric():
-            await message.answer(f'Code is 6-digit integer. Try again!')
+            await message.answer(f'Код - строка из 6 цифр. Попробуй снова!')
         elif int(message.text) in get_lobby.get_all_lobbies():
-            get_lobby(int(message.text)).add_player(message.from_user.id)
-            await message.answer(f'Successfully added. Now wait for the start')
+            if get_lobby(int(message.text)).is_player_in_lobby(message.from_user.id):
+                await message.answer(f'Ты уже есть в лобби')
+            else:
+                get_player(message.from_user.id)
+                get_player(message.from_user.id).username = message.from_user.username
+                get_lobby(int(message.text)).add_player(message.from_user.id)
+                await message.answer(f'Добавил тебя в лобби. Теперь жди начала игры')
         else:
-            await message.answer(f'Mistake in the lobby code. Try again!')
+            await message.answer(f'Возникла ошибка при добавлении в лобби. Попробуй снова!')
 
     async def _buy_item(self, message):
         if not message.text.isnumeric():
@@ -55,6 +53,9 @@ class MyMessageHandler(MessageHandler):
                                  reply_markup=build_inlineKB_from_list(
                                     callback="buy",
                                     items=[f"{item}: {items.get_price(item)}"
-                                           for item in get_player(message.chat.id).items_to_buy]
-                                 ))
+                                           for item in get_player(message.chat.id).items_to_buy],
+                                    return_markup=False
+                                    ).button(text="Cмотреть инвентарь",
+                                             callback_data="checkinventory").as_markup()
+                                 )
             get_player(message.from_user.id).wants_to_buy = None

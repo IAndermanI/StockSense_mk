@@ -12,13 +12,14 @@ class PlayerFactory:
 class Player:
     def __init__(self, user_id):
         self.user_id = user_id
+        self.username = ""
         self.inventory = defaultdict(int)
         self.balance = 100 # начальная сумма
         self.wants_to_buy = None
         self.items_to_buy = []
 
     def buy_item(self, item_name, quantity):
-        if quantity < 0:
+        if quantity < 0 or item_name not in self.items_to_buy:
             return False
         elif items.get_price(item_name) * quantity <= self.balance:
             self.inventory[item_name] += quantity

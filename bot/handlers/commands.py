@@ -34,13 +34,15 @@ class MyCommandsHandler(MessageHandler, MessageHandlerCommandMixin):
 
     async def _handle_start(self, message, state):
         if message.from_user.id in config.admin_ids:
-            await message.answer(f'Hi, please /create_lobby')
+            await message.answer(f'Привет, создай лобби: /create_lobby')
         else:
-            await message.answer(f'Здравствуйте, спросите у админа лобби-ID .')
+            await message.answer(f'Привет, это игра Копилка. Дождись, пока учитель не назовет номер лобби, '
+                                 f'а затем введи его')
             await state.set_state(JOIN.EnterCode)
 
     async def _handle_create_lobby(self, message):
         if message.from_user.id in config.admin_ids:
             new_lobby = get_lobby()
-            await message.answer(f'Give this lobby ID to the kids: {new_lobby.lobby_code}',
-                                 reply_markup=build_inlineKB_from_list(new_lobby.lobby_code, ['Start']))
+            await message.answer(f'Назови детям номер лобби: {new_lobby.lobby_code}',
+                                 reply_markup=build_inlineKB_from_list(new_lobby.lobby_code, ['Start', 'See players']))
+

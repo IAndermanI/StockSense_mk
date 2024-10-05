@@ -23,7 +23,7 @@ class Round:
     def get_top_players(self):
         players_and_assets = {}
         for player_id in self.player_ids:
-            players_and_assets[player_id] = get_player(player_id).get_total_assets()
-        top_players = sorted(players_and_assets, key=lambda id: -players_and_assets[id])
+            players_and_assets[get_player(player_id).username] = get_player(player_id).get_total_assets()
+        top_players = sorted(players_and_assets, key=lambda username: -players_and_assets[username])
         return top_players
 

@@ -24,6 +24,10 @@ class MyMessageHandler(MessageHandler):
             await self._enter_code(message)
         elif cur_state == ROUND.BuyItem:
             await self._buy_item(message)
+        elif cur_state == ROUND.Deposit:
+            await self._buy_item(message, is_deposit=True)
+        elif cur_state == ROUND.SellItem:
+            await self._sell_item(message)
 
     async def _enter_code(self, message):
         if not message.text.isnumeric():
@@ -34,25 +38,64 @@ class MyMessageHandler(MessageHandler):
             get_lobby(int(message.text)).add_player(message.from_user.id)
             await message.answer(f'Успешно добавили в лобби. Теперь жди начала')
         else:
-            await message.answer(f'Mistake in the lobby code. Try again!')
+            await message.answer(f'Ошибка при подключении к лобби. Попробуй снова!')
 
-    async def _buy_item(self, message):
+    async def _buy_item(self, message, is_deposit=False):
         if not message.text.isnumeric():
-            await message.answer(f'Введи число')
+            await message.answer(f'Введи целое положительное число')
         else:
-            buy_item = get_player(message.from_user.id).buy_item(
-                get_player(message.from_user.id).wants_to_buy, int(message.text))
-            if buy_item:
+            successful = False
+            if is_deposit:
+                successful = get_player(message.from_user.id).deposit(int(message.text))
+            else:
+                successful = get_player(message.from_user.id).buy_item(
+                    get_player(message.from_user.id).wants_to_buy, int(message.text))
+            if successful:
                 await message.answer('Успешно куплено')
             else:
-                await message.answer("Что-то пошло не так. Попробуй купить товар заново")
-            await message.answer(text="Выбери, что будешь покупать",
-                                 reply_markup=build_inlineKB_from_list(
-                                    callback="buy",
-                                    items=[f"{item}: {items.get_price(item)}"
-                                           for item in get_player(message.chat.id).items_to_buy],
-                                    return_markup=False
-                                    ).button(text="Cмотреть инвентарь",
-                                             callback_data="checkinventory").as_markup()
-                                 )
+                await message.answer("Что-то пошло не так. Попробуй заново")
+
+            if items.round_number == 1:
+                await message.answer(text="Выбери, что будешь покупать",
+                                     reply_markup=build_inlineKB_from_list(
+                                      callback="buy",
+                                      items=[f"{item}: {items.get_price(item)}"
+                                             for item in get_player(message.from_user.id).items_to_buy],
+                                      return_markup=False
+                                       ).button(
+                                       text="Вклад: 20%", callback_data="deposit").button(
+                                       text="Cмотреть инвентарь", callback_data="checkinventory").adjust(2).as_markup()
+                                     )
+            else:
+                await message.answer(
+                    text="Что хочешь сделать?",
+                    reply_markup=build_inlineKB_from_list(
+                        callback="options",
+                        items=["Купить", "Продать", "Смотреть инвентарь"]
+                    )
+                )
+
             get_player(message.from_user.id).wants_to_buy = None
+
+    async def _sell_item(self, message):
+        if not message.text.isnumeric():
+            await message.answer(f'Введи число')
+        if not float(message.text).is_integer():
+            await message.answer(f'Введи целое число')
+        else:
+            sell_item = get_player(message.from_user.id).sell_item(
+                get_player(message.from_user.id).wants_to_sell, int(message.text))
+            if sell_item:
+                await message.answer('Успешно продано')
+            else:
+                await message.answer("Что-то пошло не так. Попробуй заново")
+
+            await message.answer(
+                text="Что хочешь сделать?",
+                reply_markup=build_inlineKB_from_list(
+                    callback="options",
+                    items=["Купить", "Продать", "Смотреть инвентарь"]
+                )
+            )
+
+            get_player(message.from_user.id).wants_to_sell = None

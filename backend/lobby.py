@@ -1,4 +1,3 @@
-from backend.items import Items
 from backend.round import Round
 from random import randint
 from backend.items import items
@@ -40,6 +39,3 @@ class Lobby:
         self.round = Round(player_ids=self.player_ids)
 
 get_lobby = LobbyFactory()
-
-
-

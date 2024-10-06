@@ -6,15 +6,5 @@ class JOIN(StatesGroup):
 
 class ROUND(StatesGroup):
     BuyItem = State()
-
-class ROUNDS(StatesGroup):
-    Round1 = State()
-    AddStocks = State()
-    DeleteStock = State()
-    StockNews = State()
-    AddedStocks = State()
-
-class FIELDS(StatesGroup):
-    Fields = State()
-    AddField = State()
-    DeleteField = State()
+    SellItem = State()
+    Deposit = State()

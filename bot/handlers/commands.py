@@ -44,5 +44,6 @@ class MyCommandsHandler(MessageHandler, MessageHandlerCommandMixin):
         if message.from_user.id in config.admin_ids:
             new_lobby = get_lobby()
             await message.answer(f'Назови детям номер лобби: {new_lobby.lobby_code}',
-                                 reply_markup=build_inlineKB_from_list(new_lobby.lobby_code, ['Start', 'See players']))
+                                 reply_markup=build_inlineKB_from_list(new_lobby.lobby_code, ['Начать',
+                                                                                              'Смотреть участников']))
 

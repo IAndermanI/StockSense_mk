@@ -66,7 +66,7 @@ class MyCallbackHandler(CallbackQueryHandler):
                         items=[f"{item}: {items.get_price(item)}"
                                for item in items_to_pick],
                         return_markup=False
-                       ).button(text="Вклад: 20%",
+                       ).button(text="Вклад: 10%",
                                 callback_data="deposit")
         if items.round_number == 1:
             reply_markup = reply_markup.button(text="Смотреть инвентарь",

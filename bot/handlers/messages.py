@@ -63,7 +63,7 @@ class MyMessageHandler(MessageHandler):
                                              for item in get_player(message.from_user.id).items_to_buy],
                                       return_markup=False
                                        ).button(
-                                       text="Вклад: 20%", callback_data="deposit").button(
+                                       text="Вклад: 10%", callback_data="deposit").button(
                                        text="Cмотреть инвентарь", callback_data="checkinventory").adjust(2).as_markup()
                                      )
             else:

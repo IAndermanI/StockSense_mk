@@ -14,7 +14,7 @@ class Round:
         for player_id in self.player_ids:
             if self.round_number <= 10:
                 get_player(player_id).balance += 50
-            get_player(player_id).balance += 1.2 * get_player(player_id).deposited
+            get_player(player_id).balance += 1.1 * get_player(player_id).deposited
             get_player(player_id).deposited = 0
 
 

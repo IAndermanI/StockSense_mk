@@ -328,6 +328,8 @@ test_2 = {
     "thing": [600, 600]
 }
 
+sceneries = ['teenagers', 'test']
+
 class Items:
     def __init__(self, round_number=1):
         self.items = [items_1, items_2, items_3, items_4, items_5, items_6,

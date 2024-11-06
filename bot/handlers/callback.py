@@ -3,6 +3,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.storage.base import StorageKey
 from aiogram.handlers import CallbackQueryHandler
 from backend.lobby import *
+from backend.items import *
 from backend.player import get_player
 from bot.keyboard import *
 from bot.states import *
@@ -29,6 +30,8 @@ class MyCallbackHandler(CallbackQueryHandler):
                 await self._send_admin_panel(lobby_code)
             elif split_callback[1] == 'Смотреть участников':
                 await self._send_players_names(lobby_code)
+            elif split_callback[1] == 'Выбрать сценарий':
+                await self._send_choose_scenery(message)
         elif split_callback[0] == "scenery":
             await self._set_scenery(split_callback[1])
         elif split_callback[0] == "options":
@@ -47,6 +50,9 @@ class MyCallbackHandler(CallbackQueryHandler):
         elif split_callback[0] == "admin":
             if split_callback[2] == "Следующий раунд":
                 await self._start_new_round(int(split_callback[1]))
+                await self._send_admin_panel(int(split_callback[1]), True)
+            elif split_callback[2] == "Завершить игру":
+                await self._end_game(int(split_callback[1]))
             elif split_callback[2] == "Смотреть игроков":
                 await self._list_players(int(split_callback[1]))
         elif split_callback[0] == "back":
@@ -63,6 +69,7 @@ class MyCallbackHandler(CallbackQueryHandler):
         
 
     async def _set_scenery(self, scenery_name):
+        await self.message.delete()
         items.set_scenery(scenery_name)
 
     async def _send_items_to_buy(self, player_id, edit_text=False):
@@ -141,20 +148,32 @@ class MyCallbackHandler(CallbackQueryHandler):
         for player_id in items_to_pick.keys():
             await self._send_options_kb(player_id)
 
-
+    async def _send_choose_scenery(self, message):
+        await message.answer(f'Выбери сценарий',
+                                reply_markup=build_inlineKB_from_list('scenery', sceneries))
 
     async def _start_game(self, lobby_code):
         get_lobby(lobby_code).start_game()
         await self._send_items_to_buy_everyone(lobby_code)
 
-    async def _send_admin_panel(self, lobby_code):
-        await self.message.answer(
-            text="Control keyboard",
-            reply_markup=build_inlineKB_from_list(
-                callback=f"admin_{lobby_code}",
-                items=["Смотреть игроков", "Следующий раунд"]
+    async def _send_admin_panel(self, lobby_code, to_change=False):
+        next_round_text = "Следующий раунд" if get_lobby(lobby_code).round.round_number < items.max_rounds else "Завершить игру"
+        if to_change:
+            await self.message.edit_text(
+                text=f"Панель управления. Раунд №{get_lobby(lobby_code).round.round_number}",
+                reply_markup=build_inlineKB_from_list(
+                    callback=f"admin_{lobby_code}",
+                    items=["Смотреть игроков", next_round_text]
+                )
             )
-        )
+        else:
+            await self.message.answer(
+                text=f"Панель управления. Раунд №{get_lobby(lobby_code).round.round_number}",
+                reply_markup=build_inlineKB_from_list(
+                    callback=f"admin_{lobby_code}",
+                    items=["Смотреть игроков", next_round_text]
+                )
+            )
 
     async def _send_players_names(self, lobby_code):
         player_ids = get_lobby(lobby_code).player_ids
@@ -184,6 +203,18 @@ class MyCallbackHandler(CallbackQueryHandler):
         get_lobby(lobby_code).round.start_new_round()
         await self._send_options_kb_to_everyone(lobby_code)
 
+    async def _end_game(self, lobby_code):
+        top_players = get_lobby(lobby_code).round.get_top_players()
+        final_message = f"Поздравляем, вы прошли наш мастеркласс! Надеемся, вы многому научились.\nФинальный топ игроков:\n"
+        for i in range(len(top_players)):
+            final_message += f"{i+1}. @{top_players[i]}"
+
+        for player_id in get_lobby(lobby_code).player_ids:
+            await self.bot.send_message(
+                chat_id=player_id,
+                text=final_message
+            )
+    
     async def _get_best_players(self, lobby_code):
         top_players = get_lobby(lobby_code).round.get_top_players()
         top_players_message = "Лучшие игроки по стоимости владений:\n"

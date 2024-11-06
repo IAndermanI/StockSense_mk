@@ -30,6 +30,7 @@ class MyCommandsHandler(MessageHandler, MessageHandlerCommandMixin):
         if command == 'start':
             await self._handle_start(message, state)
         elif command == 'create_lobby':
+            await self._handle_choose_scenery(message)
             await self._handle_create_lobby(message)
 
     async def _handle_start(self, message, state):
@@ -39,6 +40,11 @@ class MyCommandsHandler(MessageHandler, MessageHandlerCommandMixin):
             await message.answer(f'Привет, это игра Копилка. Дождись, пока учитель не назовет номер лобби, '
                                  f'а затем введи его')
             await state.set_state(JOIN.EnterCode)
+
+    async def _handle_choose_scenery(self, message):
+        if message.from_user.id in config.admin_ids:
+            await message.answer(f'Выбери сценарий для игры',
+                                 reply_markup=build_inlineKB_from_list('scenery', ['teenagers', 'test']))
 
     async def _handle_create_lobby(self, message):
         if message.from_user.id in config.admin_ids:

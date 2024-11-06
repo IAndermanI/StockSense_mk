@@ -29,6 +29,8 @@ class MyCallbackHandler(CallbackQueryHandler):
                 await self._send_admin_panel(lobby_code)
             elif split_callback[1] == 'Смотреть участников':
                 await self._send_players_names(lobby_code)
+        elif split_callback[0] == "scenery":
+            await self._set_scenery(split_callback[1])
         elif split_callback[0] == "options":
             if split_callback[1] == "Купить":
                 await self._send_items_to_buy(self.message.chat.id, edit_text=True)
@@ -58,6 +60,10 @@ class MyCallbackHandler(CallbackQueryHandler):
             await self._get_player_info(int(split_callback[1]), split_callback[2])
         elif split_callback[0] == "deposit":
             await self._buy_item("deposit", state)
+        
+
+    async def _set_scenery(self, scenery_name):
+        items.set_scenery(scenery_name)
 
     async def _send_items_to_buy(self, player_id, edit_text=False):
         items_to_pick = get_player(player_id).items_to_buy

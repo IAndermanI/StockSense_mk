@@ -316,12 +316,39 @@ items_18 = {
     "Акции СБЕРа": [32, 32],
 }
 
+test_1 = {
+    "test": [1, 1],
+    "item": [2, 2],
+    "thing": [600, 600]
+}
+
+test_2 = {
+    "test": [10, 10],
+    "item": [20, 20],
+    "thing": [600, 600]
+}
+
 class Items:
     def __init__(self, round_number=1):
         self.items = [items_1, items_2, items_3, items_4, items_5, items_6,
                       items_7, items_8, items_9, items_10, items_11, items_12,
                       items_13, items_14, items_15, items_16, items_17, items_18]
         self.round_number = round_number
+        self.max_rounds = 18
+    
+    def set_scenery(self, scenery_name):
+        if scenery_name == 'teenagers':
+            self.items = [items_1, items_2, items_3, items_4, items_5, items_6,
+                          items_7, items_8, items_9, items_10, items_11, items_12,
+                          items_13, items_14, items_15, items_16, items_17, items_18]
+        elif scenery_name == 'test':
+            self.items = [test_1, test_2]
+        else: # default
+            self.items = [items_1, items_2, items_3, items_4, items_5, items_6,
+                          items_7, items_8, items_9, items_10, items_11, items_12,
+                          items_13, items_14, items_15, items_16, items_17, items_18]
+
+        self.max_rounds = len(self.items)
 
     def get_items_list(self):
         return list(self.items[self.round_number - 1].keys())

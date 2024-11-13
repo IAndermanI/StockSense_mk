@@ -34,7 +34,10 @@ class MyMessageHandler(MessageHandler):
             await message.answer(f'Код - строка из 6 цифр. Попробуй снова!')
         elif int(message.text) in get_lobby.get_all_lobbies():
             get_player(message.from_user.id)
-            get_player(message.from_user.id).username = message.from_user.username
+            if message.from_user.username is None:
+                get_player(message.from_user.id).username = message.from_user.full_name
+            else:  
+                get_player(message.from_user.id).username = '@' + message.from_user.username
             get_lobby(int(message.text)).add_player(message.from_user.id)
             await message.answer(f'Успешно добавили в лобби. Теперь жди начала')
         else:

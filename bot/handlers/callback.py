@@ -179,7 +179,7 @@ class MyCallbackHandler(CallbackQueryHandler):
         player_ids = get_lobby(lobby_code).player_ids
         players_names = ""
         for i, player_id in enumerate(player_ids, start=1):
-            players_names += f"{i}: @{get_player(player_id).username}\n"
+            players_names += f"{i}: {get_player(player_id).username}\n"
         if players_names == "":
             await self.message.answer("Никто еще не присоединился :(")
         else:

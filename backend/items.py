@@ -1,6 +1,6 @@
-from sceneries.teenagers import teenagers_scenery
-from sceneries.test import test_scenery
-from sceneries.conferention import conferention_scenery
+from backend.sceneries.teenagers import teenagers_scenery
+from backend.sceneries.test import test_scenery
+from backend.sceneries.conferention import conferention_scenery
 
 sceneries = ['teenagers', 'test', 'conferention']
 

@@ -1,22 +1,24 @@
-import sceneries as sc
+from sceneries.teenagers import teenagers_scenery
+from sceneries.test import test_scenery
+from sceneries.conferention import conferention_scenery
 
 sceneries = ['teenagers', 'test', 'conferention']
 
 class Items:
     def __init__(self, round_number=1):
-        self.items = sc.teenagers.teenagers_scenery
+        self.items = teenagers_scenery
         self.round_number = round_number
-        self.max_rounds = 18
+        self.max_rounds = len(teenagers_scenery)
     
     def set_scenery(self, scenery_name):
         if scenery_name == 'teenagers':
-            self.items = sc.teenagers.teenagers_scenery
+            self.items = teenagers_scenery
         elif scenery_name == 'test':
-            self.items = sc.test.test_scenery
+            self.items = test_scenery
         elif scenery_name == 'conferention':
-            self.items = sc.conferention.conferention_scenery
+            self.items = conferention_scenery
         else: # default
-            sc.teenagers.teenagers_scenery
+            self.items = teenagers_scenery
 
         self.max_rounds = len(self.items)
 

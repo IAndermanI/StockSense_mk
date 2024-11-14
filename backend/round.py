@@ -9,8 +9,8 @@ class Round:
         self.items_to_pick = {}
 
     def start_new_round(self):
-        self.round_number += 1
         items.round_number += 1
+        self.round_number = items.round_number
         for player_id in self.player_ids:
             if self.round_number <= 10:
                 get_player(player_id).balance += 50

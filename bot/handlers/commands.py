@@ -11,8 +11,8 @@ from aiogram.fsm.storage.base import StorageKey
 from bot.states import *
 from config import config
 from backend.lobby import *
+from backend.items import *
 from bot.keyboard import *
-from backend.items import sceneries
 
 commands_router = Router()
 

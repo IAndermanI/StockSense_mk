@@ -18,6 +18,7 @@ class MyCallbackHandler(CallbackQueryHandler):
 
     async def handle(self):
         callback_data = self.callback_data
+        print(f'Callback data: {callback_data}')
         message = self.message
         split_callback = callback_data.split('_')
         user_storage_key = StorageKey(self.bot.id, message.chat.id, message.chat.id)
@@ -31,22 +32,22 @@ class MyCallbackHandler(CallbackQueryHandler):
             elif split_callback[1] == 'Смотреть участников':
                 await self._send_players_names(lobby_code)
             elif split_callback[1] == 'Выбрать сценарий':
-                await self._send_choose_scenery(message)
+                await self._send_choose_scenery(lobby_code, message)
         elif split_callback[0] == "scenery":
-            await self._set_scenery(split_callback[1])
+            await self._set_scenery(int(split_callback[1]), split_callback[2])
         elif split_callback[0] == "options":
-            if split_callback[1] == "Купить":
-                await self._send_items_to_buy(self.message.chat.id, edit_text=True)
-            elif split_callback[1] == "Продать":
-                await self._send_items_to_sell(self.message.chat.id, edit_text=True)
-            elif split_callback[1] == "Смотреть инвентарь":
-                await self._send_inventory("options")
+            if split_callback[2] == "Купить":
+                await self._send_items_to_buy(int(split_callback[1]), self.message.chat.id, edit_text=True)
+            elif split_callback[2] == "Продать":
+                await self._send_items_to_sell(int(split_callback[1]), self.message.chat.id, edit_text=True)
+            elif split_callback[2] == "Смотреть инвентарь":
+                await self._send_inventory(int(split_callback[1]), "options")
         elif split_callback[0] == "buy":
-            item_to_buy = split_callback[1].split(':')[0]
-            await self._buy_item(item_to_buy, state)
+            item_to_buy = split_callback[2].split(':')[0]
+            await self._buy_item(int(split_callback[1]), item_to_buy, state)
         elif split_callback[0] == "sell":
-            item_to_sell = split_callback[1].split(':')[0]
-            await self._sell_item(item_to_sell, state)
+            item_to_sell = split_callback[2].split(':')[0]
+            await self._sell_item(int(split_callback[1]), item_to_sell, state)
         elif split_callback[0] == "admin":
             if split_callback[2] == "Следующий раунд":
                 await self._start_new_round(int(split_callback[1]))
@@ -56,34 +57,34 @@ class MyCallbackHandler(CallbackQueryHandler):
             elif split_callback[2] == "Смотреть игроков":
                 await self._list_players(int(split_callback[1]))
         elif split_callback[0] == "back":
-            if split_callback[1] == "options":
-                await self._send_options_kb(self.message.chat.id, edit_text=True)
-            elif split_callback[1] == "buy":
-                await self._send_items_to_buy(self.message.chat.id, edit_text=True)
+            if split_callback[2] == "options":
+                await self._send_options_kb(int(split_callback[1]), self.message.chat.id, edit_text=True)
+            elif split_callback[2] == "buy":
+                await self._send_items_to_buy(int(split_callback[1]), self.message.chat.id, edit_text=True)
         elif split_callback[0] == "checkinventory":
-            await self._send_inventory("buy")
+            await self._send_inventory(int(split_callback[1]), "buy")
         elif split_callback[0] == "playerinfo":
             await self._get_player_info(int(split_callback[1]), split_callback[2])
         elif split_callback[0] == "deposit":
-            await self._buy_item("deposit", state)
+            await self._buy_item(int(split_callback[1]), "deposit", state)
         
 
-    async def _set_scenery(self, scenery_name):
+    async def _set_scenery(self, lobby_code, scenery_name):
         await self.message.delete()
-        items.set_scenery(scenery_name)
+        get_items(lobby_code).set_scenery(scenery_name)
 
-    async def _send_items_to_buy(self, player_id, edit_text=False):
+    async def _send_items_to_buy(self, lobby_code, player_id, edit_text=False):
         items_to_pick = get_player(player_id).items_to_buy
         reply_markup = build_inlineKB_from_list(
-                        callback="buy",
-                        items=[f"{item}: {items.get_price(item)}"
+                        callback=f"buy_{lobby_code}",
+                        items=[f"{item}: {get_items(lobby_code).get_price(item)}"
                                for item in items_to_pick],
                         return_markup=False
                        ).button(text="Вклад: 10%",
-                                callback_data="deposit")
-        if items.round_number == 1:
+                                callback_data=f"deposit_{lobby_code}")
+        if get_items(lobby_code).round_number == 1:
             reply_markup = reply_markup.button(text="Смотреть инвентарь",
-                                               callback_data="checkinventory")
+                                               callback_data=f"checkinventory_{lobby_code}")
         reply_markup = reply_markup.adjust(2).as_markup()
         if edit_text:
             await self.message.edit_text(
@@ -97,14 +98,14 @@ class MyCallbackHandler(CallbackQueryHandler):
                 reply_markup=reply_markup
             )
 
-    async def _send_items_to_sell(self, player_id, edit_text=False):
+    async def _send_items_to_sell(self, lobby_code, player_id, edit_text=False):
         items_to_sell = list(get_player(player_id).inventory.keys())
         if edit_text:
             await self.message.edit_text(
                 text="Выбери, что хочешь продать",
                 reply_markup=build_inlineKB_from_list(
-                    callback="sell",
-                    items=[f"{item}: {items.get_price(item, False)}"
+                    callback=f"sell_{lobby_code}",
+                    items=[f"{item}: {get_items(lobby_code).get_price(item, False)}"
                            for item in items_to_sell]
                 )
             )
@@ -113,18 +114,18 @@ class MyCallbackHandler(CallbackQueryHandler):
                 chat_id=player_id,
                 text="Выбери, что хочешь продать",
                 reply_markup=build_inlineKB_from_list(
-                    callback="sell",
-                    items=[f"{item}: {items.get_price(item, False)}"
+                    callback=f"sell_{lobby_code}",
+                    items=[f"{item}: {get_items(lobby_code).get_price(item, False)}"
                            for item in items_to_sell]
                 )
             )
 
-    async def _send_options_kb(self, player_id, edit_text=False):
+    async def _send_options_kb(self, lobby_code, player_id, edit_text=False):
         if edit_text:
             await self.message.edit_text(
                 text="Что хочешь сделать?",
                 reply_markup=build_inlineKB_from_list(
-                    callback="options",
+                    callback=f"options_{lobby_code}",
                     items=["Купить", "Продать", "Смотреть инвентарь"]
                 )
             )
@@ -133,7 +134,7 @@ class MyCallbackHandler(CallbackQueryHandler):
                 chat_id=player_id,
                 text="Что хочешь сделать?",
                 reply_markup=build_inlineKB_from_list(
-                    callback="options",
+                    callback=f"options_{lobby_code}",
                     items=["Купить", "Продать", "Смотреть инвентарь"]
                 )
             )
@@ -141,23 +142,23 @@ class MyCallbackHandler(CallbackQueryHandler):
     async def _send_items_to_buy_everyone(self, lobby_code):
         items_to_pick = get_lobby(lobby_code).round.get_items_to_pick()
         for player_id in items_to_pick.keys():
-            await self._send_items_to_buy(player_id)
+            await self._send_items_to_buy(lobby_code, player_id)
 
     async def _send_options_kb_to_everyone(self, lobby_code):
         items_to_pick = get_lobby(lobby_code).round.get_items_to_pick()
         for player_id in items_to_pick.keys():
-            await self._send_options_kb(player_id)
+            await self._send_options_kb(lobby_code, player_id)
 
-    async def _send_choose_scenery(self, message):
+    async def _send_choose_scenery(self, lobby_code, message):
         await message.answer(f'Выбери сценарий',
-                                reply_markup=build_inlineKB_from_list('scenery', sceneries))
+                                reply_markup=build_inlineKB_from_list(f'scenery_{lobby_code}', sceneries))
 
     async def _start_game(self, lobby_code):
         get_lobby(lobby_code).start_game()
         await self._send_items_to_buy_everyone(lobby_code)
 
     async def _send_admin_panel(self, lobby_code, to_change=False):
-        next_round_text = "Следующий раунд" if get_lobby(lobby_code).round.round_number < items.max_rounds else "Завершить игру"
+        next_round_text = "Следующий раунд" if get_lobby(lobby_code).round.round_number < get_items(lobby_code).max_rounds else "Завершить игру"
         if to_change:
             await self.message.edit_text(
                 text=f"Панель управления. Раунд №{get_lobby(lobby_code).round.round_number}",
@@ -185,7 +186,7 @@ class MyCallbackHandler(CallbackQueryHandler):
         else:
             await self.message.answer(players_names)
 
-    async def _buy_item(self, item_to_buy, state):
+    async def _buy_item(self, lobby_code, item_to_buy, state):
         if item_to_buy == "deposit":
             await state.set_state(ROUND.Deposit)
         else:
@@ -193,7 +194,7 @@ class MyCallbackHandler(CallbackQueryHandler):
             get_player(self.message.chat.id).wants_to_buy = item_to_buy
         await self.message.edit_text("Сколько?")
 
-    async def _sell_item(self, item_to_sell, state):
+    async def _sell_item(self, lobby_code, item_to_sell, state):
         await state.set_state(ROUND.SellItem)
         get_player(self.message.chat.id).wants_to_sell = item_to_sell
         await self.message.edit_text("Сколько?")
@@ -207,7 +208,7 @@ class MyCallbackHandler(CallbackQueryHandler):
         top_players = get_lobby(lobby_code).round.get_top_players()
         final_message = f"Поздравляем, вы прошли наш мастеркласс! Надеемся, вы многому научились.\nФинальный топ игроков:\n"
         for i in range(len(top_players)):
-            final_message += f"{i+1}. @{top_players[i]}"
+            final_message += f"{i+1}. {top_players[i]}"
 
         for player_id in get_lobby(lobby_code).player_ids:
             await self.bot.send_message(
@@ -227,11 +228,11 @@ class MyCallbackHandler(CallbackQueryHandler):
                 text=top_players_message
             )
 
-    async def _send_inventory(self, back_to):
+    async def _send_inventory(self, lobby_code, back_to):
         await self.message.edit_text(
             text=get_player(self.message.chat.id).check_inventory(),
             reply_markup=build_inlineKB_from_list(
-                callback=f"back_{back_to}",
+                callback=f"back_{lobby_code}_{back_to}",
                 items=["Назад"]
             )
         )

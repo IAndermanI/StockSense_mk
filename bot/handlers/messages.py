@@ -44,6 +44,7 @@ class MyMessageHandler(MessageHandler):
             await message.answer(f'Ошибка при подключении к лобби. Попробуй снова!')
 
     async def _buy_item(self, message, is_deposit=False):
+        lobby_code = get_player(message.from_user.id).lobby_code
         if not message.text.isnumeric():
             await message.answer(f'Введи целое положительное число')
         else:
@@ -58,22 +59,22 @@ class MyMessageHandler(MessageHandler):
             else:
                 await message.answer("Что-то пошло не так. Попробуй заново")
 
-            if items.round_number == 1:
+            if get_items(lobby_code).round_number == 1:
                 await message.answer(text="Выбери, что будешь покупать",
                                      reply_markup=build_inlineKB_from_list(
-                                      callback="buy",
-                                      items=[f"{item}: {items.get_price(item)}"
+                                      callback=f"buy_{lobby_code}",
+                                      items=[f"{item}: {get_items(lobby_code).get_price(item)}"
                                              for item in get_player(message.from_user.id).items_to_buy],
                                       return_markup=False
                                        ).button(
-                                       text="Вклад: 10%", callback_data="deposit").button(
-                                       text="Cмотреть инвентарь", callback_data="checkinventory").adjust(2).as_markup()
+                                       text="Вклад: 10%", callback_data=f"deposit_{lobby_code}").button(
+                                       text="Cмотреть инвентарь", callback_data=f"checkinventory_{lobby_code}").adjust(2).as_markup()
                                      )
             else:
                 await message.answer(
                     text="Что хочешь сделать?",
                     reply_markup=build_inlineKB_from_list(
-                        callback="options",
+                        callback=f"options_{lobby_code}",
                         items=["Купить", "Продать", "Смотреть инвентарь"]
                     )
                 )
@@ -81,6 +82,7 @@ class MyMessageHandler(MessageHandler):
             get_player(message.from_user.id).wants_to_buy = None
 
     async def _sell_item(self, message):
+        lobby_code = get_player(message.from_user.id).lobby_code
         if not message.text.isnumeric():
             await message.answer(f'Введи число')
         if not float(message.text).is_integer():
@@ -96,7 +98,7 @@ class MyMessageHandler(MessageHandler):
             await message.answer(
                 text="Что хочешь сделать?",
                 reply_markup=build_inlineKB_from_list(
-                    callback="options",
+                    callback=f"options_{lobby_code}",
                     items=["Купить", "Продать", "Смотреть инвентарь"]
                 )
             )

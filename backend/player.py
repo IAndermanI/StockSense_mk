@@ -1,5 +1,5 @@
 from collections import defaultdict
-from backend.items import items
+from backend.items import get_items
 
 class PlayerFactory:
     _instances = {}
@@ -19,13 +19,24 @@ class Player:
         self.wants_to_sell = None
         self.deposited = 0
         self.items_to_buy = []
+        self.lobby_code = None
+
+    def set_default_settings(self):
+        self.username = ""
+        self.inventory = defaultdict(int)
+        self.balance = 100
+        self.wants_to_buy = None
+        self.wants_to_sell = None
+        self.deposited = 0
+        self.items_to_buy = []
+        self.lobby_code = None
 
     def buy_item(self, item_name, quantity):
         if quantity <= 0 or item_name not in self.items_to_buy:
             return False
-        elif items.get_price(item_name) * quantity <= self.balance:
+        elif get_items(self.lobby_code).get_price(item_name) * quantity <= self.balance:
             self.inventory[item_name] += quantity
-            self.balance -= items.get_price(item_name) * quantity
+            self.balance -= get_items(self.lobby_code).get_price(item_name) * quantity
             return True
         return False
 
@@ -36,7 +47,7 @@ class Player:
             self.inventory[item_name] -= quantity
             if self.inventory[item_name] == 0:
                 self.inventory.pop(item_name)
-            self.balance += items.get_price(item_name, False) * quantity
+            self.balance += get_items(self.lobby_code).get_price(item_name, False) * quantity
             return True
         return False
 
@@ -60,7 +71,7 @@ class Player:
     def get_total_assets(self) -> int:
         value = self.balance + self.deposited
         for item_name in self.inventory:
-            value += items.get_price(item_name, False) * self.inventory[item_name]
+            value += get_items(self.lobby_code).get_price(item_name, False) * self.inventory[item_name]
         return value
 
 get_player = PlayerFactory()

@@ -4,11 +4,20 @@ from backend.sceneries.conferention import conferention_scenery
 
 sceneries = ['teenagers', 'test', 'conferention']
 
+class ItemsFactory:
+    _instances = {}
+
+    def __call__(self, lobby_code, *args, **kwargs):
+        if lobby_code not in self._instances:
+            self._instances[lobby_code] = Items(lobby_code)
+        return self._instances[lobby_code]
+    
 class Items:
-    def __init__(self, round_number=1):
+    def __init__(self, lobby_code, round_number=1):
         self.items = teenagers_scenery
         self.round_number = round_number
         self.max_rounds = len(teenagers_scenery)
+        self.lobby_code = lobby_code
     
     def set_scenery(self, scenery_name):
         if scenery_name == 'teenagers':
@@ -28,5 +37,5 @@ class Items:
     def get_price(self, item_name, is_buy=True):
         is_buying = 0 if is_buy else 1
         return self.items[self.round_number - 1][item_name][is_buying]
-
-items = Items(1)
+    
+get_items = ItemsFactory()

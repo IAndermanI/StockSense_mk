@@ -1,8 +1,9 @@
 from backend.sceneries.teenagers import teenagers_scenery
 from backend.sceneries.test import test_scenery
 from backend.sceneries.conferention import conferention_scenery
+from backend.sceneries.seven_eight_grade import seven_eight_grade_scenery
 
-sceneries = ['teenagers', 'test', 'conferention']
+sceneries = ['teenagers', 'test', 'conferention', '7-8 класс']
 
 class ItemsFactory:
     _instances = {}
@@ -26,6 +27,8 @@ class Items:
             self.items = test_scenery
         elif scenery_name == 'conferention':
             self.items = conferention_scenery
+        elif scenery_name == '7-8 класс':
+            self.items = seven_eight_grade_scenery
         else: # default
             self.items = teenagers_scenery
 

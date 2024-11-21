@@ -220,7 +220,7 @@ class MyCallbackHandler(CallbackQueryHandler):
         top_players = get_lobby(lobby_code).round.get_top_players()
         top_players_message = "Лучшие игроки по стоимости владений:\n"
         for i in range(min(3, len(top_players))):
-            top_players_message += f"{i+1}. @{top_players[i]}"
+            top_players_message += f"{i+1}. {top_players[i]}"
 
         for player_id in get_lobby(lobby_code).player_ids:
             await self.bot.send_message(

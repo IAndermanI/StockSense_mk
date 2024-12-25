@@ -2,7 +2,6 @@ from aiogram.fsm.context import FSMContext
 from aiogram import Router
 from aiogram.handlers import MessageHandler
 from aiogram.fsm.storage.base import StorageKey
-from backend.player import get_player
 from bot.keyboard import build_inlineKB_from_list
 from bot.states import *
 from backend.lobby import *
@@ -34,14 +33,15 @@ class MyMessageHandler(MessageHandler):
             await message.answer(f'Код - строка из 6 цифр. Попробуй снова!')
         elif int(message.text) in get_lobby.get_all_lobbies():
             get_player(message.from_user.id)
+            get_lobby(int(message.text)).add_player(message.from_user.id)
             if message.from_user.username is None:
                 get_player(message.from_user.id).username = message.from_user.full_name
             else:  
                 get_player(message.from_user.id).username = '@' + message.from_user.username
-            get_lobby(int(message.text)).add_player(message.from_user.id)
             await message.answer(f'Успешно добавили в лобби. Теперь жди начала')
         else:
             await message.answer(f'Ошибка при подключении к лобби. Попробуй снова!')
+        print(get_player(message.from_user.id).username)
 
     async def _buy_item(self, message, is_deposit=False):
         lobby_code = get_player(message.from_user.id).lobby_code
